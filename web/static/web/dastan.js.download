@@ -1,0 +1,451 @@
+//Text editor
+var emobox = `<div class="emobox" style="display: none;">
+<div class="emj">👍</div>
+<div class="emj">😂</div>
+<div class="emj">😘</div>
+<div class="emj">❤️</div>
+<div class="emj">😍</div>
+<div class="emj">😁</div>
+<div class="emj">😀</div>
+<br>
+
+<div class="emj">😬</div>
+<div class="emj">😭</div>
+<div class="emj">💋</div>
+<div class="emj">😒</div>
+<div class="emj">😳</div>
+<div class="emj">😛</div>
+<div class="emj">😎</div><br>
+
+<div class="emj">👿</div>
+<div class="emj">😏</div>
+<div class="emj">😞</div>
+<div class="emj">😓</div>
+<div class="emj">😚</div>
+<div class="emj">👽</div>
+<div class="emj">💀</div><br>
+
+<div class="emj">😪</div>
+<div class="emj">🤤</div>
+<div class="emj">😇</div>
+<div class="emj">😕</div>
+<div class="emj">💩</div>
+<div class="emj">😴</div>
+<div class="emj">🤮</div><br>
+
+<div class="emj">🌹</div>
+<div class="emj">👋</div>
+<div class="emj">👌</div>
+<div class="emj">🙏</div>
+<div class="emj">👏</div>
+<div class="emj">💪</div>
+<div class="emj">👎</div><br>
+</div>`;
+
+
+
+
+//=show hide emoticon div=
+$(document).on('click', '.showhide_emobox', function () {
+
+  if ($('.emobox').length) {
+    $('.emobox').remove();
+    return
+}
+  $('.text-editor').prepend(emobox);
+  $('.emobox').toggle();
+  $(this).toggleClass('active');  
+
+});
+
+//=show hide emoticon div=
+$(document).on('click', '.showhide_emobox', function () {
+  $('.emobox').toggle();
+  $(this).toggleClass('active');
+  $('.emobox').toggle();
+  $(this).toggleClass('active');  
+});
+
+//===Search Dastan======
+
+$(function () {
+  $('#searchdastan').keyup(function () {
+    //var form = $('#search-dastan-form');
+    let minlength = 3;
+    value = $(this).val();
+    if (value.length >= minlength) {
+      $.ajax({
+        type: "GET",
+        url: "/search/dastan/",
+        data: {
+          s: value,
+        },
+        success: function (data, textStatus, jqXHR) {
+          $('#search-results').empty();
+          var html = "<ul>";
+          jsonObject = JSON.parse(data);
+          jsonObject.forEach(function (res) {
+            html += "<li><a href=\'/dastan/" + res.slug + "\'>" + res.title + "</a></li>";
+          });
+          html += "</ul>"
+          $('#search-results').append(html);
+        },
+        dataType: 'html'
+      });
+    }
+
+  });
+});
+
+
+
+
+
+//===Like Dastan=================
+$(document).on('click', '#like-dastan', function () {
+  let id = $(this).parents().find('.did').attr('id');
+  let token = $('.token').attr('id');
+  $.ajax({
+    url: "/like/dastan/",
+    type: 'post',
+    data: {
+      id: id,
+      token: token,
+    },
+    success: function (res) {
+      var oldLikesSt = $("#like_count").text();
+      var oldLikes = parseInt(oldLikesSt);
+      if (res == 'minus') {
+        let newLikes = oldLikes - 1;
+        $("#like_count").text(newLikes);
+
+      } else if (res == 'plus') {
+        let newLikes = oldLikes + 1;
+        $("#like_count").text(newLikes);
+      }
+    },
+    error: function (err) {
+      console.log('error received:', err);
+    }
+  });
+});
+
+
+$(document).on('click', '#dislike-dastan', function () {
+  let id = $(this).parents().find('.did').attr('id');
+  let token = $('.token').attr('id');
+  $.ajax({
+    url: "/dislike/dastan/",
+    type: 'post',
+    data: {
+      id: id,
+      token: token,
+    },
+    success: function (res) {
+      var oldDislikes = parseInt($("#dislike_count").text());
+      if (res == 'minus') {
+        $("#dislike_count").text(--oldDislikes);
+
+      } else if (res == 'plus') {
+        $("#dislike_count").text(++oldDislikes);
+      }
+    },
+    error: likeError
+  });
+});
+
+
+function likeError(jqXHR, exception) {
+  var msg = '';
+  if (jqXHR.status === 0) {
+    msg = 'Not connect.\n Verify Network.';
+  } else if (jqXHR.status == 404) {
+    msg = 'Requested page not found. [404]';
+  } else if (jqXHR.status == 500) {
+    msg = 'Internal Server Error [500].';
+  } else if (exception === 'parsererror') {
+    msg = 'Requested JSON parse failed.';
+  } else if (exception === 'timeout') {
+    msg = 'Time out error.';
+  } else if (exception === 'abort') {
+    msg = 'Ajax request aborted.';
+  } else {
+    msg = 'Uncaught Error.\n' + jqXHR.responseText;
+  }
+  console.log(msg);
+}
+
+//Like comment
+$(document).ready(function () {
+  $('.heart').click(function () {
+    var _self = this;
+    let c_id_raw = this.id;
+    let c_id = c_id_raw.split("_")[1];
+    let token = $('.token').attr('id');
+    let oldLikes = parseInt($(_self).text().split(" ")[0]);
+    $(_self).empty();
+    console.log('comment liking c_id: ', c_id);
+    var form = $(this).parents('form:first');
+    $.ajax({
+      url: "/dastan/c/like/",
+      type: 'post',
+      data: {
+        c_id: c_id,
+        token: token,
+      },
+      success: function (res) {
+        console.log('oldLikes', oldLikes);
+        if (res == 'minus') {
+          let newLikes = oldLikes - 1;
+          $(_self).text(newLikes + " ❤️ ");
+        } else if (res == 'plus') {
+          let newLikes = oldLikes + 1;
+          $(_self).text(newLikes + " ❤️ ");
+        }
+      },
+      error: likeError
+    });
+  });
+});
+
+
+
+//================Bold Text button==================
+$(document).on('click', '.btnBold', function () {
+  var textArea = $('.text-body');
+  var len = textArea.val().length;
+  var start = textArea[0].selectionStart;
+  var end = textArea[0].selectionEnd;
+  var selectedText = textArea.val().substring(start, end);
+  var replacement = "**" + selectedText + "**";
+  textArea.val(textArea.val().substring(0, start) + replacement + textArea.val().substring(end, len));
+});
+
+
+//==============Quote button============
+$(document).on('click', '.btnBlockquote', function () {
+  var textArea = $('.text-body');
+  var len = textArea.val().length;
+  var start = textArea[0].selectionStart;
+  var end = textArea[0].selectionEnd;
+  var selectedText = textArea.val().substring(start, end);
+  var replacement = "<blockquote>" + selectedText + "</blockquote>";
+  textArea.val(textArea.val().substring(0, start) + replacement + textArea.val().substring(end, len));
+});
+
+
+
+
+
+ 
+// //  ============add emoticons============
+$(document).on('click', '.emj', function () {
+  var textarea_val = jQuery.trim($('.text-body').val());
+  var emotion_val = $(this).text();
+  if (textarea_val == '') {
+    var sp = '';
+  } else {
+    var sp = ' ';
+  }
+  $('.text-body').focus().val(textarea_val + sp + emotion_val + sp);
+
+});
+
+//================Hyperlink button==================
+$(document).ready(function () {
+  function HyperLink(elementID, url) {
+    var textArea = $('.' + elementID);
+    var len = textArea.val().length;
+    var start = textArea[0].selectionStart;
+    var end = textArea[0].selectionEnd;
+    var selectedText = textArea.val().substring(start, end);
+    var replacement = '[' + selectedText + '](' + url + ')';
+    textArea.val(textArea.val().substring(0, start) + replacement + textArea.val().substring(end, len));
+  }
+
+  $('.btnHyperlink').click(function () {
+    console.log('insert hyperlink clicked!');
+    var href = prompt("لینک را وارد کنید");
+    console.log('href is:', href);
+    if (href != "" && href != null) {
+      HyperLink("text-body", href);
+    } else {
+      HyperLink("text-body", "");
+    }
+  });
+});
+
+
+//==============report comment============
+$(document).on('click', '.chv', function () {
+  _self = this;
+  $(this).addClass('report').removeClass("chv");
+  $(this).text('گزارش تخلف');
+});
+
+
+
+$(document).on('click', '.report', function () {
+  let _self = this;
+  let c_id_raw = $(this).parents('.comment').find("[id^=cl_]").attr('id');
+  console.log('c_id_raw', c_id_raw);
+  let cid = c_id_raw.split("_")[1];
+  let pid = $(this).parents('.panel').find('.did').attr('id');
+  let token = $('.token').attr('id');
+  let username = $(this).parents('.comment').find(".usrnm").text();
+  console.log('post and id to report is, token:', cid, pid, token);
+  console.log('username to report:', username);
+  $.ajax({
+    url: "/report/cmnt/",
+    type: 'post',
+    data: {
+      cid: cid,
+      pid: pid,
+      ptype: 1,
+      username: username,
+      token: token,
+    },
+    success: function (res) {
+      alert("گزارش شما دریافت شد. با سپاس");
+      $(_self).empty();
+      $(_self).addClass('chv').removeClass('report');
+    },
+    error: function (xhr) {
+      if (xhr.status == 405) {
+        alert("شما قبلا این پست را گزارش داده اید");
+        $(_self).addClass('chv').removeClass('report');
+      } else if (xhr.status == 406) {
+        alert("این گزارش قبلا نپذیرفته شده");
+        $(_self).addClass('chv').removeClass('report');
+
+      } else {
+        alert("خطایی رخ داد");
+
+      }
+    }
+  });
+});
+
+
+//===Subscribe Tag=================
+$(document).on('click', '.feed', function (e) {
+  e.preventDefault();
+  let token = $('.token').attr('id');
+  let tag = $('.tag_name').text();
+  $.ajax({
+    url: "/dastan/tag/sub",
+    type: 'post',
+    data: {
+      tag: tag,
+      token: token,
+    },
+    success: function (res) {
+      console.log("res is:", res);
+      let message = "";
+      if (res == "added") {
+        message = `<div class="toast toast-success">
+        اشتراک شما در این برچسب ثبت شد
+     </div>`
+
+        $('.tag_name').append('<span class="tick"></span>');
+
+      }
+      if (res == "removed") {
+        message = `<div class="toast toast-warning">
+        اشتراک شما لغو شد
+     </div>`;
+        $(".tick").remove();
+      }
+      if (res == "nouser") {
+        $('.tag_name').append(`<small> برای اشتراک در برچسب ها  <a href="/login">وارد شوید </a> یا <a href="/register">ثبت نام کنید </a>.‍‍</small>`);
+      }
+
+      $('#flash-container').prepend(message);
+      setTimeout(function () {
+        $('.toast').remove();
+      }, 3000);
+
+    },
+    error: function (err) {
+      console.log('error received:', err);
+    }
+  });
+});
+
+
+
+//===Show likders=================
+$(document).ready(function () {
+  $('#like_count').hover(function () {
+    $('.dlikers').empty();
+    console.log('show likers hovered');
+    let id = $(this).parents().find('.did').attr('id');
+    let token = $('.token').attr('id');
+    $.ajax({
+      url: "/show/dastan/likers",
+      type: 'post',
+      data: {
+        id: id,
+        token: token,
+      },
+      success: function (res) {
+        console.log(res);
+        let likers = ""
+        let link = ""
+        $.each(res, function(i, item) {
+          console.log(item.u, item.avtr);
+          if (item.avtr.length > 0) {
+            link = `<a href="/profile/${item.u}" title="${item.u}">
+          <img class="img-liker" src="/media/images/${item.avtr}"></a>`          
+        } else {
+          link = `<a href="/profile/${item.u}" title="${item.u}">
+          <img class="img-liker" src="/media/images/no.png"></a>` 
+        }
+        likers = likers + "&nbsp;" + link
+      });
+      $('.dlikers').append(likers);
+      },
+      error: function (err) {
+        console.log('error received:', err);
+      }
+    });
+  });
+});
+
+//===Show dislikers=================
+$(document).ready(function () {
+  $('#dislike_count').hover(function () {
+    $('.dlikers').empty();
+    console.log('show likers hovered');
+    let id = $(this).parents().find('.did').attr('id');
+    let token = $('.token').attr('id');
+    $.ajax({
+      url: "/show/dastan/dislikers",
+      type: 'post',
+      data: {
+        id: id,
+        token: token,
+      },
+      success: function (res) {
+        console.log(res);
+        let likers = ""
+        let link = ""
+        $.each(res, function(i, item) {
+          console.log(item.u, item.avtr);
+          if (item.avtr.length > 0) {
+            link = `<a href="/profile/${item.u}" title="${item.u}">
+          <img class="img-liker" src="/media/images/${item.avtr}"></a>`          
+        } else {
+          link = `<a href="/profile/${item.u}" title="${item.u}">
+          <img class="img-liker" src="/media/images/no.png"></a>` 
+        }
+        likers = likers + "&nbsp;" + link
+      });
+      $('.dlikers').append(likers);
+      },
+      error: function (err) {
+        console.log('error received:', err);
+      }
+    });
+  });
+});

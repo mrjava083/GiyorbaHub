@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<!-- saved from url=(0096)https://shahvani.com/dastan/%D8%B3%DA%A9%D8%B3-%D8%B9%D8%A7%D8%B4%D9%88%D8%B1%D8%A7%DB%8C%DB%8C- -->
+<html lang="fa" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>گیوربای هاب | Giyorba Hub</title>
+<link rel="stylesheet" type="text/css" href="{% static 'web/all.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'web/bundle.css' %}">
+<script src="{% static 'web/sfp.js.download' %}"></script></head>
+<body>
+<div class="site-wrapper">
+<header class="site-header">
+<div class="wrapper site-header__wrapper">
+<div class="site-header__start">
+<a href="" class="brand"><img class="logo" alt="shahvani.com" src="{% static 'web/Giyorba-hub.png' %}"></a>
+</div>
+<ul class="nav__wrapper">
+</ul>
+<div class="site-header__end">
+</div>
+</div>
+</header>
+<div id="myDropdown" class="noti-dropdown-content"></div>
+<div id="flash-container">
+</div>
+<div class="row">
+<div class="col s12 l6 push-l3">
+<div class="panel">
+<div class="panel-body">
+<h4 class="black">لیست رمان ها</h4>
+</div>
+<ul>
+{% for i in AllRoman %}
+<li> <a href="post/{{i.slug}}">{{i.title}}</a><a style="font-size: .85em;color: #757575;"> | {{i.vote}} 👁️</a></li>
+<br>
+{% endfor %}
+<hr>
+<footer>
+<a href="">تمام حقوق برای گیوربای هاب محفوظ است</a>
+</footer>
+</div>
+<br>
+<script src="{% static 'web/jquery-3.5.1.min.js.download' %}"></script>
+<script src="{% static 'web/moment.js.download' %}"></script>
+<script src="{% static 'web/underscore-min.js.download' %}"></script>
+<script src="{% static 'web/global.js.download' %}"></script>
+<script src="{% static 'web/lp.js.download' %}"></script>
+<script src="{% static 'web/sharer.min.js.download' %}"></script>

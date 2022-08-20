@@ -1,0 +1,85 @@
+$(document).on('click', '.closebtn', function () {
+  $(this).closest('.flash-sse').fadeOut();
+ 
+});
+
+async function subscribe() {
+    const resp = await fetch("/notiupdate");
+    if (!resp.ok) {
+      throw new Error(`HTTP error ${resp.status}`);
+     } else { 
+      update = await resp.json();
+      let msg =  Object.keys(update)[0]
+      try {
+        if (msg.length > 1) {
+            sseFlash(msg)
+            changeCounter()
+          }
+      } catch (error) {
+      }    
+    }
+}
+
+async function subscribePM() {
+  const resp = await fetch("/pmnotiupdate");
+  if (!resp.ok) {
+    throw new Error(`HTTP error ${resp.status}`);
+   } else { 
+    update = await resp.json();
+    let msg =  Object.keys(update)[0]
+    try {
+      if (msg.length > 1) {
+          sseFlash(msg)
+     
+        }
+    } catch (error) {
+    }    
+  }
+}
+
+
+
+
+
+ setTimeout(function next() {
+     subscribe();    
+    setTimeout(next, 5000);
+}, 5000);
+
+setTimeout(function next() {
+  let url = window.location.href;
+  if (!url.includes("messages/view/t")){
+    subscribePM();    
+  }
+ 
+ setTimeout(next, 6000);
+}, 6000);
+
+
+const  hideSSEFlash = (rnum) => {    
+    if (!rnum) rnum = '0';    
+    let elements = document.getElementsByClassName(rnum);
+    while (elements.length > 0) elements[0].remove();
+
+}
+ 
+const  sseFlash = (msg) => {
+      var rnum = _.random(0, 100000);
+      var flash = `<div  class="flash-sse  ${rnum}" role="alert">
+                   ${msg}   <span class="closebtn">&times;</span>
+                    </div>`; 
+
+      $('.lpcnt').append(flash);
+      setTimeout(function(){
+        hideSSEFlash(rnum);
+      }, 10000); 
+} 
+
+const changeCounter = () => {
+  const bellCntr = document.querySelector('.bll');
+  let newCntr = parseInt(bellCntr.dataset.badge) + 1;
+  let title  = document.title.split("(")[0];
+  bellCntr.dataset.badge = newCntr;
+  document.title = title + " ("+ newCntr+")";
+}
+ 

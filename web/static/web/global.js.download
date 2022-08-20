@@ -1,0 +1,300 @@
+/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
+function myFunction() {
+    var x = document.getElementById("myTopnav");
+    if (x.className === "topnav") {
+        x.className += " responsive";
+    } else {
+        x.className = "topnav";
+    }
+}
+
+
+
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function () {
+    scrollFunction()
+};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        document.getElementById("toTop").style.display = "inline";
+        document.getElementById("toBottom").style.display = "none";
+    } else {
+        document.getElementById("toTop").style.display = "none";
+        document.getElementById("toBottom").style.display = "inline";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+
+function botFunction() {
+    let height = document.body.clientHeight;
+    document.body.scrollTop = height;
+    document.documentElement.scrollTop = height;
+
+}
+
+
+
+var inputDiv = document.getElementsByClassName('since');
+
+if (inputDiv) {
+    for (i = 0; i < inputDiv.length; i++) {
+        inputDiv[i].innerHTML = moment(inputDiv[i].innerHTML, "YYYY-MM-DD HH:mm:ss").fromNow();
+    }
+}
+
+
+//open my-avatar menu
+$(document).ready(function () {
+    let path = "/media/images/" + localStorage.getItem('avatar');
+    $('.my-avatar').attr('src', path);
+
+});
+
+
+$(function () {
+    //$(document).foundation();
+
+    // Hide any messages after a few seconds
+    hideFlash();
+});
+
+function hideFlash(rnum) {
+    if (!rnum) rnum = '0';
+
+    _.delay(function () {
+        $('.alert-box-fixed' + rnum).fadeOut(300, function () {
+            $(this).css({
+                "visibility": "hidden",
+                display: 'block'
+            }).slideUp();
+            var that = this;
+            _.delay(function () {
+                that.remove();
+            }, 400);
+        });
+    }, 4000);
+}
+
+function showFlash(obj) {
+    $('#flash-container').html();
+    $(obj).each(function (i, v) {
+        var rnum = _.random(0, 100000);
+        var message = '<div id="flash-message" class="alert-box-fixed' +
+            rnum + ' alert-box-fixed alert alert-dismissible ' + v.cssclass + '">' +
+            '<button type="button btn-clear" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+            v.message + '</div>';
+        $('#flash-container').prepend(message);
+        hideFlash(rnum);
+    });
+}
+
+function flashError(message) {
+    var flash = [{
+        Class: "alert-danger",
+        Message: message
+    }];
+    showFlash(flash);
+}
+
+function flashSuccess(message) {
+    var flash = [{
+        Class: "alert-success",
+        Message: message
+    }];
+    showFlash(flash);
+}
+
+function flashNotice(message) {
+    var flash = [{
+        Class: "alert-info",
+        Message: message
+    }];
+    showFlash(flash);
+}
+
+function flashWarning(message) {
+    var flash = [{
+        Class: "alert-warning",
+        Message: message
+    }];
+    showFlash(flash);
+}
+
+
+//Open notifications menu
+$(document).ready(function () {
+    $('.dropbtn').click(function () {
+        $('#myDropdown').empty();
+        $('#myDropdown').toggle();
+        $.ajax({
+            url: "/getnotifs",
+            type: 'GET',
+            success: function (res) {
+                var count = Object.keys(res).length;
+                let items = "";
+                for (var item in res) {
+                    let li = '<li class="item">' + item + '<span class="del-item">✕</span></li>';
+                    items = items.concat(li);
+                };
+                let menu = `
+                    <ul class="menu text-left">
+                        ${items}
+                    </ul><br>
+                 `;
+
+                let close = `<div><a href="#" class="close-noti"><small>  ببند  </small></a></div>`
+                let del_ntofis = `<div><a href="#" class="del-notifs"><small>  حذف همه  </small></a></div>`
+                if (count > 0) {
+                    $('#myDropdown').append(del_ntofis);
+                }
+                $('#myDropdown').append(menu);
+                $('#myDropdown').append(close);
+
+
+
+            },
+            error: function (err) {
+                console.log("error in res", err);
+            }
+
+        });
+    });
+});
+
+//close notifications box
+$(document).on('click', '.close-noti', function () {
+    $('#myDropdown').toggle();
+});
+
+//delete all notifications
+$(document).on('click', '.del-notifs', function () {
+    $.ajax({
+        url: "/delnotifs",
+        type: 'GET',
+        success: function (res) {
+            $('#myDropdown').empty();
+            let bg = $('.bell').data('badge');
+            $('.bell').attr('data-badge', '0');
+        },
+
+        error: function (err) {
+            console.log("error in response", err);
+        }
+    });
+});
+
+
+
+
+//delete single notifications
+$(document).on('click', '.del-item', function () {
+    let _this = $(this);
+    let token = $('.token').attr('id');
+    keyRaw = $(this).parent('li').html();
+    key = keyRaw.split('<span class="del-item">✕</span>')[0];
+    $.ajax({
+        url: "/delanoti",
+        type: 'get',
+        data: {
+            item: key,
+        },
+        success: function (res) {
+            _this.closest('.item').hide();
+
+        },
+
+        error: function (err) {
+            console.log(err);
+        }
+    });
+});
+
+//menu
+let navToggle = document.querySelector(".nav__toggle");
+let navWrapper = document.querySelector(".nav__wrapper");
+
+navToggle.addEventListener("click", function () {
+  if (navWrapper.classList.contains("active")) {
+    this.setAttribute("aria-expanded", "false");
+    this.setAttribute("aria-label", "menu");
+    navWrapper.classList.remove("active");
+  } else {
+    navWrapper.classList.add("active");
+    this.setAttribute("aria-label", "close menu");
+    this.setAttribute("aria-expanded", "true");
+  }
+});
+
+//enlarge images
+$('.img-responsive').addClass('img-enlargeable').click(function(){
+    var src = $(this).attr('src');
+    var modal;
+    function removeModal(){ modal.remove(); $('body').off('keyup.modal-close'); }
+    modal = $('<div>').css({
+        background: 'RGBA(0,0,0,.85) url('+src+') no-repeat center',
+        backgroundSize: 'contain',
+        width:'100%', height:'100%',
+        position:'fixed',
+        zIndex:'10000',
+        top:'0', left:'0',
+        cursor: 'zoom-out'
+    }).click(function(){
+        removeModal();
+    }).appendTo('body');
+    //handling ESC
+    $('body').on('keyup.modal-close', function(e){
+      if(e.key==='Escape'){ removeModal(); } 
+    });
+});
+
+
+//enlarge images
+$('.imgr').addClass('img-enlargeable').click(function(){
+    var src = $(this).attr('src');
+    var modal;
+    function removeModal(){ modal.remove(); $('body').off('keyup.modal-close'); }
+    modal = $('<div>').css({
+        background: 'RGBA(0,0,0,.85) url('+src+') no-repeat center',
+        backgroundSize: 'contain',
+        width:'100%', height:'100%',
+        position:'fixed',
+        zIndex:'10000',
+        top:'0', left:'0',
+        cursor: 'zoom-out'
+    }).click(function(){
+        removeModal();
+    }).appendTo('body');
+    //handling ESC
+    $('body').on('keyup.modal-close', function(e){
+      if(e.key==='Escape'){ removeModal(); } 
+    });
+});
+
+
+$('.profilepic').addClass('img-enlargeable').click(function(){
+    var src = $(this).attr('src');
+    var modal;
+    function removeModal(){ modal.remove(); $('body').off('keyup.modal-close'); }
+    modal = $('<div>').css({
+        background: 'RGBA(0,0,0,.85) url('+src+') no-repeat center',
+        backgroundSize: 'contain',
+        width:'100%', height:'100%',
+        position:'fixed',
+        zIndex:'10000',
+        top:'0', left:'0',
+        cursor: 'zoom-out'
+    }).click(function(){
+        removeModal();
+    }).appendTo('body');
+    //handling ESC
+    $('body').on('keyup.modal-close', function(e){
+      if(e.key==='Escape'){ removeModal(); } 
+    });
+});
+
